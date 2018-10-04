@@ -3,34 +3,34 @@
 const Botkit = require("botkit");
 const AzureDevops = require("azure-devops-node-api");
 
-// Slack bot
-const controller = Botkit.slackbot({debug: !!process.env.DEBUG});
-const bot = controller.spawn({
-    incoming_webhook: {
-        url: process.env.SLACK_INCOMING_WEBHOOK
-    }
-});
+module.exports = async function (context, myTimer) {
+    // Slack bot
+    const controller = Botkit.slackbot();
+    const bot = controller.spawn({
+        incoming_webhook: {
+            url: process.env.SLACK_INCOMING_WEBHOOK
+        }
+    });
 
-// Azure DevOps connection
-const orgUrl = `https://dev.azure.com/${process.env.AZURE_DEVOPS_ORGANIZATION}`;
-const authHandler = AzureDevops.getPersonalAccessTokenHandler(
-    process.env.AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN);
-const connection = new AzureDevops.WebApi(orgUrl, authHandler);
+    // Azure DevOps connection
+    const orgUrl = `https://dev.azure.com/${process.env.AZURE_DEVOPS_ORGANIZATION}`;
+    const authHandler = AzureDevops.getPersonalAccessTokenHandler(
+        process.env.AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN);
+    const connection = new AzureDevops.WebApi(orgUrl, authHandler);
 
-// Load pull-requests
-async function getAllPullRequests() {
+    // Load pull-requests
     const git = await connection.getGitApi();
-    const prs = await git.getPullRequestsByProject(
+    const rawPullRequests = await git.getPullRequestsByProject(
         process.env.AZURE_DEVOPS_PROJECT);
 
-    const threadRequests = prs.map(
+    const threadRequests = rawPullRequests.map(
         pr => git.getThreads(pr.repository.id, pr.pullRequestId));
     const threadsByPullRequest = await Promise.all(threadRequests);
     const activeComments = threadsByPullRequest.map(
         threads => threads.filter(
             thread => thread.status == 1 && !thread.isDeleted).length);
 
-    const statuses = prs.map(pr => {
+    const statuses = rawPullRequests.map(pr => {
         if (pr.reviewers.some(r => r.vote == -10)) {
             return "Rejected";
         } else if (pr.reviewers.some(r => r.vote == -5)) {
@@ -44,7 +44,7 @@ async function getAllPullRequests() {
         }
     });
 
-    return prs.map((pr, index) => ({
+    const pullRequests = rawPullRequests.map((pr, index) => ({
         title: pr.title,
         reviewers: pr.reviewers.map(r =>
             r.uniqueName.includes("@")
@@ -60,12 +60,10 @@ async function getAllPullRequests() {
         status: statuses[index],
         activeComments: activeComments[index]
     }));
-}
 
-// Format and print pull requests
-getAllPullRequests().then((prs) => {
+    // Format and print pull requests
     const now = new Date();
-    const attachments = prs.map(pr => {
+    const attachments = pullRequests.map(pr => {
         // Yellow when older than a day, red when older than a week.
         const dangerThreshold = 7 * 24 * 60 * 60 * 1000;
         const warningThreshold = 1 * 24 * 60 * 60 * 1000;
@@ -116,11 +114,9 @@ getAllPullRequests().then((prs) => {
         attachments: attachments,
     }, (err, res) => {
         if (err) {
-            console.error(err);
+            context.error(err);
         }
     });
 
-    console.log(`Reminded about ${attachments.length} pull requests.`)
-}).catch((err) => {
-    console.error(err);
-});
+    context.log(`Reminded about ${attachments.length} pull requests.`);
+};
