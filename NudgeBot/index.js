@@ -78,6 +78,15 @@ module.exports = async function (context, myTimer) {
             color = "good";
         }
 
+        let status;
+        if (pr.activeComments > 1) {
+            status = `${pr.status} (${pr.activeComments} unresolved comments)`;
+        } else if (pr.activeComments == 1) {
+            status = `${pr.status} (${pr.activeComments} unresolved comment)`;
+        } else {
+            status = pr.status;
+        }
+
         return {
             fallback: `${pr.title} by ${pr.author}`,
             color: color,
@@ -100,7 +109,7 @@ module.exports = async function (context, myTimer) {
                 },
                 {
                     title: "Status",
-                    value: pr.activeComments > 0 ? `${pr.status} (${pr.activeComments} unresolved comments)` : pr.status
+                    value: status
                 }
 
             ],
