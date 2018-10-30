@@ -1,6 +1,6 @@
 {
   "dependencies": {
     "azure-devops-node-api": "6.6.0",
-    "botkit": "0.6.16"
+    "botkit": "0.6.18"
   }
 }
