@@ -11,5 +11,8 @@ Visit https://my.slack.com/services/new/incoming-webhook to create a new incomin
 ### AZURE_DEVOPS_ORGANIZATION and AZURE_DEVOPS_PROJECT
 The organization and project parts of your https://dev.azure.com/organization/project URL.
 
+`AZURE_DEVOPS_PROJECT` can optionally contain multiple project names separated by commas (`"project1,project2"`).
+In that case, NudgeBot will post a list for each project.
+
 ### AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN
 See https://docs.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/pats?view=vsts
