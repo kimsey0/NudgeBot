@@ -127,6 +127,19 @@ module.exports = async function (context, myTimer) {
             }
         });
 
-        context.log(`Reminded about ${attachments.length} pull requests in ${project}.`);
+        if (attachments.length > 0) {
+            bot.sendWebhook({
+                text: `Open pull requests in ${project}`,
+                attachments: attachments,
+            }, (err, res) => {
+                if (err) {
+                    context.error(err);
+                }
+            });
+
+            context.log(`Reminded about ${attachments.length} pull requests in ${project}.`);
+        } else {
+            context.log(`No open pull requests in ${project}`);
+        }
     }
 };
