@@ -16,3 +16,12 @@ In that case, NudgeBot will post a list for each project.
 
 ### AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN
 See https://docs.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/pats?view=vsts
+
+### MESSAGE_FORMAT
+Set to `long` to include title, author, repository, source and target branch, status, number of unresolved comments, and creation time.
+Set to `short` (default) to include only title, author and repository.
+
+In either case, the pull requests will be color coded as follows:
+- Green, if created less than 24 hours ago
+- Yellow, if created between 24 hours and 7 days ago
+- Red, if created more than 7 days ago

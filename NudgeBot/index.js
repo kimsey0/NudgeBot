@@ -62,6 +62,7 @@ module.exports = async function (context, myTimer) {
         }));
 
         // Format and print pull requests
+        const longFormat = process.env.MESSAGE_FORMAT === "long";
         const now = new Date();
         const attachments = pullRequests.map(pr => {
             // Yellow when older than a day, red when older than a week.
@@ -87,43 +88,44 @@ module.exports = async function (context, myTimer) {
                 status = pr.status;
             }
 
-            return {
-                fallback: `${pr.title} by ${pr.author}`,
-                color: color,
-                title: pr.title,
-                title_link: pr.url,
-                fields: [
-                    {
-                        title: "Author",
-                        value: pr.author,
-                        short: true
-                    },
-                    {
-                        title: "Repository",
-                        value: pr.repository,
-                        short: true
-                    },
-                    {
-                        title: "Branch",
-                        value: `\`${pr.source}\` into \`${pr.target}\``
-                    },
-                    {
-                        title: "Status",
-                        value: status
-                    }
-
-                ],
-                mrkdwn_in: ["fields"],
-                ts: Math.round(pr.creationDate / 1000)
-            };
-        });
-
-        bot.sendWebhook({
-            text: `Open pull requests in ${project}`,
-            attachments: attachments,
-        }, (err, res) => {
-            if (err) {
-                context.error(err);
+            if (longFormat) {
+                return {
+                    fallback: `${pr.title} by ${pr.author}`,
+                    color: color,
+                    title: pr.title,
+                    title_link: pr.url,
+                    fields: [
+                        {
+                            title: "Author",
+                            value: pr.author,
+                            short: true
+                        },
+                        {
+                            title: "Repository",
+                            value: pr.repository,
+                            short: true
+                        },
+                        {
+                            title: "Branch",
+                            value: `\`${pr.source}\` into \`${pr.target}\``
+                        },
+                        {
+                            title: "Status",
+                            value: status
+                        }
+                    ],
+                    mrkdwn_in: ["fields"],
+                    ts: Math.round(pr.creationDate / 1000)
+                };
+            } else {
+                return {
+                    fallback: `${pr.title} by ${pr.author}`,
+                    color: color,
+                    title: pr.title,
+                    title_link: pr.url,
+                    text: `${pr.author} in \`${pr.repository}\``,
+                    mrkdwn_in: ["text"]
+                };
             }
         });
 
