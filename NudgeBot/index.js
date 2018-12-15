@@ -19,16 +19,18 @@ module.exports = async function (context, myTimer) {
     const connection = new AzureDevops.WebApi(orgUrl, authHandler);
     const git = await connection.getGitApi();
 
-    for (let project of process.env.AZURE_DEVOPS_PROJECT.split(",")) {
+    const now = new Date();
+
+    for (const project of process.env.AZURE_DEVOPS_PROJECT.split(",")) {
         // Load pull-requests
         const rawPullRequests = await git.getPullRequestsByProject(project);
 
-        const threadRequests = rawPullRequests.map(
-            pr => git.getThreads(pr.repository.id, pr.pullRequestId));
+        const threadRequests = rawPullRequests.map(pr =>
+            git.getThreads(pr.repository.id, pr.pullRequestId));
         const threadsByPullRequest = await Promise.all(threadRequests);
-        const activeComments = threadsByPullRequest.map(
-            threads => threads.filter(
-                thread => thread.status == 1 && !thread.isDeleted).length);
+        const activeComments = threadsByPullRequest.map(threads =>
+            threads.filter(thread =>
+                thread.status == 1 && !thread.isDeleted).length);
 
         const statuses = rawPullRequests.map(pr => {
             if (pr.reviewers.some(r => r.vote == -10)) {
@@ -63,8 +65,7 @@ module.exports = async function (context, myTimer) {
 
         // Format and print pull requests
         const longFormat = process.env.MESSAGE_FORMAT === "long";
-        const now = new Date();
-        const attachments = pullRequests.map(pr => {
+        const pullRequestAttachments = pullRequests.map(pr => {
             // Yellow when older than a day, red when older than a week.
             const dangerThreshold = 7 * 24 * 60 * 60 * 1000;
             const warningThreshold = 1 * 24 * 60 * 60 * 1000;
@@ -129,19 +130,60 @@ module.exports = async function (context, myTimer) {
             }
         });
 
-        if (attachments.length > 0) {
+        if (pullRequestAttachments.length > 0) {
             bot.sendWebhook({
                 text: `Open pull requests in ${project}`,
-                attachments: attachments,
+                attachments: pullRequestAttachments,
             }, (err, res) => {
                 if (err) {
                     context.error(err);
                 }
             });
 
-            context.log(`Reminded about ${attachments.length} pull requests in ${project}.`);
+            context.log(`Reminded about ${pullRequestAttachments.length} pull requests in ${project}.`);
         } else {
             context.log(`No open pull requests in ${project}`);
+        }
+
+        // Load branches
+        const repositories = await git.getRepositories(project);
+        const branchRequests = repositories.map(repository =>
+            git.getBranches(repository.id).catch(() => []));
+        const branchesByRepository = await Promise.all(branchRequests);
+        
+        const inactiveThreshold = 7 * 24 * 60 * 60 * 1000;
+        const inactiveBranchesByRepository = branchesByRepository.map((branches, index) =>
+            branches.filter(branch =>
+                branch.name.startsWith("feature/")
+                && now - branch.commit.author.date > inactiveThreshold
+                && !pullRequests.some(pullRequest =>
+                    pullRequest.repository === repositories[index].name
+                    && pullRequest.source == branch.name)));
+        
+        const inactiveBranchInformation = inactiveBranchesByRepository.map((branches, index) => ({
+            repository: repositories[index].name,
+            branches: branches.map(branch => branch.name)
+        })).filter(info => info.branches.length > 0);
+
+        const inactiveBranchAttachments = inactiveBranchInformation.map(info => ({
+            title: info.repository,
+            text: info.branches.map(branch => `- \`${branch}\``).join("\n"),
+            mrkdwn_in: ["text"]
+        }));
+
+        if (inactiveBranchAttachments.length > 0) {
+            bot.sendWebhook({
+                text: `Inactive branches in ${project}`,
+                attachments: inactiveBranchAttachments,
+            }, (err, res) => {
+                if (err) {
+                    context.error(err);
+                }
+            });
+
+            context.log(`Reminded about ${inactiveBranchAttachments.length} inactive branches in ${project}.`);
+        } else {
+            context.log(`No inactive branches in ${project}`);
         }
     }
 };
