@@ -23,10 +23,14 @@ See https://docs.microsoft.com/en-us/azure/devops/integrate/get-started/authenti
 Set to `long` to include title, author, repository, source and target branch, status, number of unresolved comments, and creation time.
 Set to `short` (default) to include only title, author and repository.
 
+### PULL_REQUEST_AGE_SINCE
+Set to `commit` to measure pull request age as time since last commit to the source branch.
+Set to `creation` (default) to measure pull request age as time since the pull request was created.
+
 In either case, the pull requests will be color coded as follows:
-- Green, if created less than 24 hours ago
-- Yellow, if created between 24 hours and 7 days ago
-- Red, if created more than 7 days ago
+- Green, if less than 24 hours old
+- Yellow, if between 24 hours and 7 days old
+- Red, if more than 7 days ago old
 
 ### INCLUDE_DRAFT_PULL_REQUESTS
 Set to any non-empty value to include draft pull requests in the list.

@@ -53,6 +53,14 @@ module.exports = async function (context, myTimer) {
             }
         });
 
+        const useLastCommitDate = process.env.PULL_REQUEST_AGE_SINCE === "commit";
+        let lastCommitByPullRequest;
+        if (useLastCommitDate) {
+            const lastCommitRequests = rawPullRequests.map(pr =>
+                git.getCommit(pr.lastMergeSourceCommit.commitId, pr.repository.id));
+            lastCommitByPullRequest = await Promise.all(lastCommitRequests);
+        }
+
         const pullRequests = rawPullRequests.map((pr, index) => ({
             title: pr.title,
             reviewers: pr.reviewers.map(r =>
@@ -67,17 +75,19 @@ module.exports = async function (context, myTimer) {
             source: pr.sourceRefName.replace(/^refs\/heads\//, ""),
             target: pr.targetRefName.replace(/^refs\/heads\//, ""),
             status: statuses[index],
-            activeComments: activeComments[index]
+            activeComments: activeComments[index],
+            lastCommitDate: useLastCommitDate && lastCommitByPullRequest[index].push.date
         }));
 
         // Format and print pull requests
         const longFormat = process.env.MESSAGE_FORMAT === "long";
-        const pullRequestAttachments = pullRequests.map(pr => {
+        const pullRequestAttachments = pullRequests.map((pr, index) => {
             // Yellow when older than a day, red when older than a week.
             const dangerThreshold = 7 * 24 * 60 * 60 * 1000;
             const warningThreshold = 1 * 24 * 60 * 60 * 1000;
 
-            const age = now - pr.creationDate;
+            const date = useLastCommitDate ? pr.lastCommitDate : pr.creationDate;
+            const age = now - date;
             let color;
             if (age > dangerThreshold) {
                 color = "danger";
