@@ -23,10 +23,14 @@ module.exports = async function (context, myTimer) {
 
     for (const project of process.env.AZURE_DEVOPS_PROJECT.split(",")) {
         // Load pull-requests
-        const rawPullRequests = await git.getPullRequestsByProject(project, {});
+        let rawPullRequests = await git.getPullRequestsByProject(project, {});
 
         // Show oldest pull-requests first
         rawPullRequests.reverse();
+
+        if (!process.env.INCLUDE_DRAFT_PULL_REQUESTS) {
+            rawPullRequests = rawPullRequests.filter(pr => !pr.isDraft);
+        }
 
         const threadRequests = rawPullRequests.map(pr =>
             git.getThreads(pr.repository.id, pr.pullRequestId));
