@@ -5,7 +5,7 @@ const AzureDevops = require("azure-devops-node-api");
 
 module.exports = async function (context, myTimer) {
     // Slack bot
-    const controller = Botkit.slackbot();
+    const controller = Botkit.slackbot({clientSigningSecret: "Not needed"});
     const bot = controller.spawn({
         incoming_webhook: {
             url: process.env.SLACK_INCOMING_WEBHOOK
@@ -23,7 +23,7 @@ module.exports = async function (context, myTimer) {
 
     for (const project of process.env.AZURE_DEVOPS_PROJECT.split(",")) {
         // Load pull-requests
-        const rawPullRequests = await git.getPullRequestsByProject(project);
+        const rawPullRequests = await git.getPullRequestsByProject(project, {});
 
         const threadRequests = rawPullRequests.map(pr =>
             git.getThreads(pr.repository.id, pr.pullRequestId));
