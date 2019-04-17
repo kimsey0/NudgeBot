@@ -25,6 +25,9 @@ module.exports = async function (context, myTimer) {
         // Load pull-requests
         const rawPullRequests = await git.getPullRequestsByProject(project, {});
 
+        // Show oldest pull-requests first
+        rawPullRequests.reverse();
+
         const threadRequests = rawPullRequests.map(pr =>
             git.getThreads(pr.repository.id, pr.pullRequestId));
         const threadsByPullRequest = await Promise.all(threadRequests);
