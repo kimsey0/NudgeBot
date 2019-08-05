@@ -2,6 +2,7 @@
 
 const Botkit = require("botkit");
 const AzureDevops = require("azure-devops-node-api");
+const calculateAge = require("./calculateAge");
 
 module.exports = async function (context, myTimer) {
     // Slack bot
@@ -83,11 +84,11 @@ module.exports = async function (context, myTimer) {
         const longFormat = process.env.MESSAGE_FORMAT === "long";
         const pullRequestAttachments = pullRequests.map((pr, index) => {
             // Yellow when older than a day, red when older than a week.
-            const dangerThreshold = 7 * 24 * 60 * 60 * 1000;
-            const warningThreshold = 1 * 24 * 60 * 60 * 1000;
+            const dangerThreshold = process.env.PULL_REQUEST_AGE_DANGER || 7 * 24;
+            const warningThreshold = process.env.PULL_REQUEST_AGE_WARNING || 24;
 
             const date = useLastCommitDate ? pr.lastCommitDate : pr.creationDate;
-            const age = now - date;
+            const age = calculateAge(date, now);
             let color;
             if (age > dangerThreshold) {
                 color = "danger";
@@ -168,11 +169,11 @@ module.exports = async function (context, myTimer) {
             git.getBranches(repository.id).catch(() => []));
         const branchesByRepository = await Promise.all(branchRequests);
         
-        const inactiveThreshold = 7 * 24 * 60 * 60 * 1000;
+        const inactiveThreshold = process.env.BRANCH_AGE_INACTIVE || 7 * 24;
         const inactiveBranchesByRepository = branchesByRepository.map((branches, index) =>
             branches.filter(branch =>
                 branch.name.startsWith("feature/")
-                && now - branch.commit.author.date > inactiveThreshold
+                && calculateAge(branch.commit.author.date, now)  > inactiveThreshold
                 && !pullRequests.some(pullRequest =>
                     pullRequest.repository === repositories[index].name
                     && pullRequest.source == branch.name)));

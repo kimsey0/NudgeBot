@@ -1,5 +1,5 @@
 # NudgeBot
-NudgeBot posts a list of open pull requests from Azure DevOps to a Slack channel.
+NudgeBot posts a list of open pull requests and inactive branches from Azure DevOps to a Slack channel.
 
 ## Application Settings
 The following application settings are supported.
@@ -14,23 +14,37 @@ Visit https://my.slack.com/services/new/incoming-webhook to create a new incomin
 The organization and project parts of your https://dev.azure.com/organization/project URL.
 
 `AZURE_DEVOPS_PROJECT` can optionally contain multiple project names separated by commas (`"project1,project2"`).
-In that case, NudgeBot will post a list for each project.
+In that case, NudgeBot will post lists for each project.
 
 ### AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN (required)
 See https://docs.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/pats?view=vsts
 
 ### MESSAGE_FORMAT
+The format for messages about pull requests.
 Set to `long` to include title, author, repository, source and target branch, status, number of unresolved comments, and creation time.
 Set to `short` (default) to include only title, author and repository.
 
-### PULL_REQUEST_AGE_SINCE
-Set to `commit` to measure pull request age as time since last commit to the source branch.
-Set to `creation` (default) to measure pull request age as time since the pull request was created.
+### PULL_REQUEST_AGE_WARNING and PULL_REQUEST_AGE_DANGER
+The allowed age of pull requests in hours until they are marked with a warning color (orange, default 24 hours) or a danger color (red, default 168 hours).
 
-In either case, the pull requests will be color coded as follows:
-- Green, if less than 24 hours old
-- Yellow, if between 24 hours and 7 days old
-- Red, if more than 7 days ago old
+### BRANCH_AGE_INACTIVE
+The allowed time since last commit was made to a branch in hours until it is marked as inactive (default 168).
+
+### PULL_REQUEST_AGE_SINCE
+Set to `commit` to measure pull request and commit age as time since last commit to the source branch.
+Set to `creation` (default) to measure pull request and commit age as time since the pull request was created.
+
+### BUSINESS_DAYS and BUSINESS_HOURS
+Set to comma-separated lists of business days and hours to calculate the age of pull requests and commits in business hours.
+
+Business days are specified as 0 for Sunday through 6 for Saturday.
+As an example, `1,2,3,4,5` means Monday through Friday.
+
+Business hours are specified in 24-hour format including the opening hour, but excluding the closing hour.
+As an example, `9,10,11,12,13,14,15,16` means 9:00 to 17:00 (9 am to 5 pm).
+
+(Remember to adjust `PULL_REQUEST_AGE_WARNING`, `PULL_REQUEST_AGE_DANGER0`, and `BRANCH_AGE_INACTIVE` to account for the smaller number of business hours in a week.
+When using business days, age limits above one month are not supported.)
 
 ### INCLUDE_DRAFT_PULL_REQUESTS
 Set to any non-empty value to include draft pull requests in the list.
