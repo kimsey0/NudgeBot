@@ -171,14 +171,16 @@ module.exports = async function (context, myTimer) {
             branches.filter(branch =>
                 !(allowRegex.test(branch.name) || ignoreRegex.test(branch.name))));
 
-        const forbiddenBranchInformation = forbiddenBranchesByRepository.map((branches, index) => ({
-            repository: repositories[index].name,
-            branches: branches.map(branch => branch.name)
-        })).filter(info => info.branches.length > 0);
+        const forbiddenBranchInformation = [].concat.apply([],
+            forbiddenBranchesByRepository.map((branches, index) => 
+                branches.map(branch => ({
+                    branch: branch.name,
+                    repository: repositories[index].name
+                }))
+        ));
 
         const forbiddenBranchAttachments = forbiddenBranchInformation.map(info => ({
-            title: info.repository,
-            text: info.branches.map(branch => `- \`${branch}\``).join("\n"),
+            text: `\`${info.branch}\` in \`${info.repository}\``,
             color: "danger",
             mrkdwn_in: ["text"]
         }));
@@ -198,23 +200,29 @@ module.exports = async function (context, myTimer) {
             context.log(`No forbidden branches in ${project}`);
         }
 
-        const inactiveThreshold = process.env.BRANCH_AGE_INACTIVE || 7 * 24;
+        const warningThreshold = process.env.BRANCH_AGE_WARNING || 7 * 24;
+        const dangerThreshold = process.env.BRANCH_AGE_DANGER || 30 * 24;
+
         const inactiveBranchesByRepository = branchesByRepository.map((branches, index) =>
             branches.filter(branch =>
                 allowRegex.test(branch.name) && !ignoreRegex.test(branch.name)
-                && calculateAge(branch.commit.author.date, now)  > inactiveThreshold
+                && calculateAge(branch.commit.author.date, now) > warningThreshold
                 && !pullRequests.some(pullRequest =>
                     pullRequest.repository === repositories[index].name
                     && pullRequest.source == branch.name)));
         
-        const inactiveBranchInformation = inactiveBranchesByRepository.map((branches, index) => ({
-            repository: repositories[index].name,
-            branches: branches.map(branch => branch.name)
-        })).filter(info => info.branches.length > 0);
+        const inactiveBranchInformation = [].concat.apply([],
+            inactiveBranchesByRepository.map((branches, index) => 
+                branches.map(branch => ({
+                    branch: branch.name,
+                    age: calculateAge(branch.commit.author.date, now),
+                    repository: repositories[index].name
+                }))
+        ));
 
         const inactiveBranchAttachments = inactiveBranchInformation.map(info => ({
-            title: info.repository,
-            text: info.branches.map(branch => `- \`${branch}\``).join("\n"),
+            text: `\`${info.branch}\` in \`${info.repository}\``,
+            color: info.age > dangerThreshold ? "danger" : "warning",
             mrkdwn_in: ["text"]
         }));
 

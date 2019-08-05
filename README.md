@@ -34,8 +34,8 @@ The default is that all branches are allowed (`.*`) and that no branches are ign
 
 As an example, to follow Gitflow-style naming, to require that all feature branches start with an issue number, a hyphen, and an uppercase letter, and to ignore inactivity for `develop` and `master`, set `ALLOW_BRANCHES` to `(feature/\\d+-[A-Z]|release/|hotfix/).*` and `IGNORE_BRANCHES` to `develop|master`.
 
-### BRANCH_AGE_INACTIVE
-The allowed time since last commit was made to a branch in hours until it is marked as inactive (default 168).
+### BRANCH_AGE_WARNING and BRANCH_AGE_DANGER
+The allowed time since last commit was made to a branch in hours until it is marked with a warning color (orange, default 168 hours) or a danger color (red, default 720 hours).
 
 ### PULL_REQUEST_AGE_SINCE
 Set to `commit` to measure pull request and commit age as time since last commit to the source branch.
@@ -50,7 +50,7 @@ As an example, `1,2,3,4,5` means Monday through Friday.
 Business hours are specified in 24-hour format including the opening hour, but excluding the closing hour.
 As an example, `9,10,11,12,13,14,15,16` means 9:00 to 17:00 (9 am to 5 pm).
 
-(Remember to adjust `PULL_REQUEST_AGE_WARNING`, `PULL_REQUEST_AGE_DANGER0`, and `BRANCH_AGE_INACTIVE` to account for the smaller number of business hours in a week.
+(Remember to adjust `PULL_REQUEST_AGE_WARNING`, `PULL_REQUEST_AGE_DANGER0`, `BRANCH_AGE_WARNING`, and `BRANCH_AGE_DANGER` to account for the smaller number of business hours in a week.
 When using business days, age limits above one month are not supported.)
 
 ### INCLUDE_DRAFT_PULL_REQUESTS
