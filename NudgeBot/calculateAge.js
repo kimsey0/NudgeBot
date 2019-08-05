@@ -1,3 +1,5 @@
+"use strict";
+
 const useBusinessDays = process.env.BUSINESS_DAYS && process.env.BUSINESS_HOURS;
 const businessDays = useBusinessDays && process.env.BUSINESS_DAYS.split(",").map(n => parseInt(n, 10));
 const businessHours = useBusinessDays && process.env.BUSINESS_HOURS.split(",").map(n => parseInt(n, 10));

@@ -27,6 +27,13 @@ Set to `short` (default) to include only title, author and repository.
 ### PULL_REQUEST_AGE_WARNING and PULL_REQUEST_AGE_DANGER
 The allowed age of pull requests in hours until they are marked with a warning color (orange, default 24 hours) or a danger color (red, default 168 hours).
 
+### ALLOW_BRANCHES and IGNORE_BRANCHES
+Set to regular expressions ([JavaScript syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)) matching the full branch name to determine which branches are allowed, which are ignored, and which are forbidden.
+Allowed branches are posted if they are marked as inactive, ignored branches are never posted, and all other branches are always posted and marked as _forbidden_.
+The default is that all branches are allowed (`.*`) and that no branches are ignored (` `).
+
+As an example, to follow Gitflow-style naming, to require that all feature branches start with an issue number, a hyphen, and an uppercase letter, and to ignore inactivity for `develop` and `master`, set `ALLOW_BRANCHES` to `(feature/\\d+-[A-Z]|release/|hotfix/).*` and `IGNORE_BRANCHES` to `develop|master`.
+
 ### BRANCH_AGE_INACTIVE
 The allowed time since last commit was made to a branch in hours until it is marked as inactive (default 168).
 

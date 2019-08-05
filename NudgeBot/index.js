@@ -163,11 +163,45 @@ module.exports = async function (context, myTimer) {
         const branchRequests = repositories.map(repository =>
             git.getBranches(repository.id).catch(() => []));
         const branchesByRepository = await Promise.all(branchRequests);
-        
+
+        const allowRegex = new RegExp(`^${process.env.ALLOW_BRANCHES || ".*"}$`);
+        const ignoreRegex = new RegExp(`^${process.env.IGNORE_BRANCHES || ""}$`);
+
+        const forbiddenBranchesByRepository = branchesByRepository.map((branches, index) =>
+            branches.filter(branch =>
+                !(allowRegex.test(branch.name) || ignoreRegex.test(branch.name))));
+
+        const forbiddenBranchInformation = forbiddenBranchesByRepository.map((branches, index) => ({
+            repository: repositories[index].name,
+            branches: branches.map(branch => branch.name)
+        })).filter(info => info.branches.length > 0);
+
+        const forbiddenBranchAttachments = forbiddenBranchInformation.map(info => ({
+            title: info.repository,
+            text: info.branches.map(branch => `- \`${branch}\``).join("\n"),
+            color: "danger",
+            mrkdwn_in: ["text"]
+        }));
+
+        if (forbiddenBranchAttachments.length > 0) {
+            try {
+                await webhook.send({
+                    text: `Forbidden branches in ${project}`,
+                    attachments: forbiddenBranchAttachments,
+                });
+            } catch (error) {
+                context.error(error);
+            }
+
+            context.log(`Reminded about ${forbiddenBranchAttachments.length} forbidden branches in ${project}.`);
+        } else {
+            context.log(`No forbidden branches in ${project}`);
+        }
+
         const inactiveThreshold = process.env.BRANCH_AGE_INACTIVE || 7 * 24;
         const inactiveBranchesByRepository = branchesByRepository.map((branches, index) =>
             branches.filter(branch =>
-                branch.name.startsWith("feature/")
+                allowRegex.test(branch.name) && !ignoreRegex.test(branch.name)
                 && calculateAge(branch.commit.author.date, now)  > inactiveThreshold
                 && !pullRequests.some(pullRequest =>
                     pullRequest.repository === repositories[index].name
