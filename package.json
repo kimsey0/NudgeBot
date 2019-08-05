@@ -1,6 +1,6 @@
 {
   "dependencies": {
     "azure-devops-node-api": "7.2.0",
-    "botkit": "0.7.4"
+    "@slack/webhook": "5.0.1"
   }
 }

@@ -1,17 +1,12 @@
 "use strict";
 
-const Botkit = require("botkit");
+const { IncomingWebhook } = require('@slack/webhook');
 const AzureDevops = require("azure-devops-node-api");
 const calculateAge = require("./calculateAge");
 
 module.exports = async function (context, myTimer) {
-    // Slack bot
-    const controller = Botkit.slackbot({clientSigningSecret: "Not needed"});
-    const bot = controller.spawn({
-        incoming_webhook: {
-            url: process.env.SLACK_INCOMING_WEBHOOK
-        }
-    });
+    // Slack webhook
+    const webhook = new IncomingWebhook(process.env.SLACK_INCOMING_WEBHOOK);
 
     // Azure DevOps connection
     const orgUrl = `https://dev.azure.com/${process.env.AZURE_DEVOPS_ORGANIZATION}`;
@@ -149,14 +144,14 @@ module.exports = async function (context, myTimer) {
         });
 
         if (pullRequestAttachments.length > 0) {
-            bot.sendWebhook({
-                text: `Open pull requests in ${project}`,
-                attachments: pullRequestAttachments,
-            }, (err, res) => {
-                if (err) {
-                    context.error(err);
-                }
-            });
+            try {
+                await webhook.send({
+                    text: `Open pull requests in ${project}`,
+                    attachments: pullRequestAttachments,
+                });
+            } catch (error) {
+                context.error(error);
+            }
 
             context.log(`Reminded about ${pullRequestAttachments.length} pull requests in ${project}.`);
         } else {
@@ -190,14 +185,14 @@ module.exports = async function (context, myTimer) {
         }));
 
         if (inactiveBranchAttachments.length > 0) {
-            bot.sendWebhook({
-                text: `Inactive branches in ${project}`,
-                attachments: inactiveBranchAttachments,
-            }, (err, res) => {
-                if (err) {
-                    context.error(err);
-                }
-            });
+            try {
+                await webhook.send({
+                    text: `Inactive branches in ${project}`,
+                    attachments: inactiveBranchAttachments,
+                });
+            } catch (error) {
+                context.error(error);
+            }
 
             context.log(`Reminded about ${inactiveBranchAttachments.length} inactive branches in ${project}.`);
         } else {
