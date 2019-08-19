@@ -10,6 +10,7 @@
     
     "SLACK_INCOMING_WEBHOOK": "",
 
+    "DRY_RUN": "",
     "MESSAGE_FORMAT": "short",
     
     "BUSINESS_DAYS": "1,2,3,4,5",
@@ -18,7 +19,7 @@
     "PULL_REQUEST_AGE_SINCE": "creation",
     "PULL_REQUEST_AGE_WARNING": 40,
     "PULL_REQUEST_AGE_DANGER": 160,
-    "INCLUDE_DRAFT_PULL_REQUESTS": false,
+    "INCLUDE_DRAFT_PULL_REQUESTS": "",
 
     "BRANCH_AGE_WARNING": 8,
     "BRANCH_AGE_DANGER": 40,

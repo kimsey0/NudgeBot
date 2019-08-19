@@ -144,13 +144,15 @@ module.exports = async function (context, myTimer) {
         });
 
         if (pullRequestAttachments.length > 0) {
-            try {
-                await webhook.send({
-                    text: `Open pull requests in ${project}`,
-                    attachments: pullRequestAttachments,
-                });
-            } catch (error) {
-                context.error(error);
+            if (!process.env.DRY_RUN) {
+                try {
+                    await webhook.send({
+                        text: `Open pull requests in ${project}`,
+                        attachments: pullRequestAttachments,
+                    });
+                } catch (error) {
+                    context.log.error(error);
+                }
             }
 
             context.log(`Reminded about ${pullRequestAttachments.length} pull requests in ${project}.`);
@@ -186,13 +188,15 @@ module.exports = async function (context, myTimer) {
         }));
 
         if (forbiddenBranchAttachments.length > 0) {
-            try {
-                await webhook.send({
-                    text: `Forbidden branches in ${project}`,
-                    attachments: forbiddenBranchAttachments,
-                });
-            } catch (error) {
-                context.error(error);
+            if (!process.env.DRY_RUN) {
+                try {
+                    await webhook.send({
+                        text: `Forbidden branches in ${project}`,
+                        attachments: forbiddenBranchAttachments,
+                    });
+                } catch (error) {
+                    context.log.error(error);
+                }
             }
 
             context.log(`Reminded about ${forbiddenBranchAttachments.length} forbidden branches in ${project}.`);
@@ -227,13 +231,15 @@ module.exports = async function (context, myTimer) {
         }));
 
         if (inactiveBranchAttachments.length > 0) {
-            try {
-                await webhook.send({
-                    text: `Inactive branches in ${project}`,
-                    attachments: inactiveBranchAttachments,
-                });
-            } catch (error) {
-                context.error(error);
+            if (!process.env.DRY_RUN) {
+                try {
+                    await webhook.send({
+                        text: `Inactive branches in ${project}`,
+                        attachments: inactiveBranchAttachments,
+                    });
+                } catch (error) {
+                    context.log.error(error);
+                }
             }
 
             context.log(`Reminded about ${inactiveBranchAttachments.length} inactive branches in ${project}.`);

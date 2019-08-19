@@ -19,6 +19,9 @@ In that case, NudgeBot will post lists for each project.
 ### AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN (required)
 See https://docs.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/pats?view=vsts
 
+### DRY_RUN
+Set to any non-empty value to avoid posting to Slack, instead just logging the number of pull requests and branches that would have been posted.
+
 ### MESSAGE_FORMAT
 The format for messages about pull requests.
 Set to `long` to include title, author, repository, source and target branch, status, number of unresolved comments, and creation time.
