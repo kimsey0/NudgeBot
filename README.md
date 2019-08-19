@@ -17,7 +17,9 @@ The organization and project parts of your https://dev.azure.com/organization/pr
 In that case, NudgeBot will post lists for each project.
 
 ### AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN (required)
-See https://docs.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/pats?view=vsts
+See https://docs.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/pats?view=azure-devops.
+
+The token requires the `Code (Read)` and `Work Items (Read)` scopes.
 
 ### DRY_RUN
 Set to any non-empty value to avoid posting to Slack, instead just logging the number of pull requests and branches that would have been posted.
