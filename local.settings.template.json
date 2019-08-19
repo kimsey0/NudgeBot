@@ -1,0 +1,30 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+
+    "AZURE_DEVOPS_ORGANIZATION": "",
+    "AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN": "",
+    "AZURE_DEVOPS_PROJECT": "",
+    
+    "SLACK_INCOMING_WEBHOOK": "",
+
+    "MESSAGE_FORMAT": "short",
+    
+    "BUSINESS_DAYS": "1,2,3,4,5",
+    "BUSINESS_HOURS": "9,10,11,12,13,14,15,16",
+
+    "PULL_REQUEST_AGE_SINCE": "creation",
+    "PULL_REQUEST_AGE_WARNING": 40,
+    "PULL_REQUEST_AGE_DANGER": 160,
+    "INCLUDE_DRAFT_PULL_REQUESTS": false,
+
+    "BRANCH_AGE_WARNING": 8,
+    "BRANCH_AGE_DANGER": 40,
+
+    "ALLOW_BRANCHES": "(feature/\\d+-[A-Z]|release/|hotfix/).*",
+    "IGNORE_BRANCHES": "develop|master"
+  },
+  "ConnectionStrings": {}
+}
